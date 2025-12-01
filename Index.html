@@ -260,6 +260,75 @@
             background-color: var(--accent-hover);
         }
 
+        /* Dropdown Menu */
+        .dropdown-container {
+            position: relative;
+            display: inline-block;
+        }
+
+        .btn-more {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-primary);
+        }
+
+        .btn-more:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            color: #fff;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            /* Show above */
+            right: 0;
+            background-color: #333;
+            min-width: 160px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+            border-radius: 8px;
+            z-index: 100;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .dropdown-item {
+            padding: 10px 16px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.2s;
+            text-align: left;
+            border: none;
+            width: 100%;
+            background: none;
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(5px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .player-container {
             margin-top: 0;
             margin-bottom: 20px;
@@ -291,6 +360,7 @@
         .actions {
             display: flex;
             gap: 8px;
+            align-items: center;
         }
 
         /* Loader */
@@ -399,6 +469,19 @@
     <script>
         let allVideos = [];
 
+        // Close dropdowns when clicking outside
+        window.onclick = function (event) {
+            if (!event.target.matches('.btn-more')) {
+                const dropdowns = document.getElementsByClassName("dropdown-menu");
+                for (let i = 0; i < dropdowns.length; i++) {
+                    const openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
+        }
+
         function loadVideos() {
             document.getElementById('loader').style.display = 'flex';
 
@@ -469,6 +552,15 @@
                     <div class="actions">
                         <button class="btn-icon btn-approve" onclick="updateStatus(${video.rowIndex}, 'Aprobado')" title="Aprobar">✓</button>
                         <button class="btn-icon btn-reject" onclick="updateStatus(${video.rowIndex}, 'Rechazado')" title="Rechazar">✕</button>
+                        
+                        <div class="dropdown-container">
+                            <button class="btn-icon btn-more" onclick="toggleDropdown(event, ${video.rowIndex})" title="Más opciones">⋮</button>
+                            <div id="dropdown-${video.rowIndex}" class="dropdown-menu">
+                                <button class="dropdown-item" onclick="copyContent(${video.rowIndex}, 'title')">📄 Copiar Título</button>
+                                <button class="dropdown-item" onclick="copyContent(${video.rowIndex}, 'description')">� Copiar Desc.</button>
+                            </div>
+                        </div>
+
                         <a href="${video.url}" target="_blank" class="btn-icon btn-download" style="text-decoration:none;" title="Descargar" download>📥</a>
                         <button class="btn-play" onclick="playVideo('${video.url}')" title="Ver Video">▶ Ver Video</button>
                     </div>
@@ -564,6 +656,84 @@
             if (window.innerWidth < 900) {
                 playerWrapper.scrollIntoView({ behavior: 'smooth' });
             }
+        }
+
+        function toggleDropdown(event, rowIndex) {
+            event.stopPropagation();
+            // Close all other dropdowns
+            const dropdowns = document.getElementsByClassName("dropdown-menu");
+            for (let i = 0; i < dropdowns.length; i++) {
+                if (dropdowns[i].id !== `dropdown-${rowIndex}`) {
+                    dropdowns[i].classList.remove('show');
+                }
+            }
+
+            const dropdown = document.getElementById(`dropdown-${rowIndex}`);
+            if (dropdown) {
+                dropdown.classList.toggle("show");
+            }
+        }
+
+        function copyContent(rowIndex, type) {
+            const video = allVideos.find(v => v.rowIndex === rowIndex);
+            if (!video) return;
+
+            let text = '';
+            let message = '';
+
+            if (type === 'title') {
+                text = video.idea;
+                message = 'Título copiado';
+            } else if (type === 'description') {
+                text = video.descripcion || '';
+                message = 'Descripción copiada';
+            }
+
+            if (!text) {
+                showToast('No hay contenido para copiar', 'error');
+                return;
+            }
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text)
+                    .then(() => showToast(message, 'success'))
+                    .catch(err => {
+                        console.error('Error al copiar: ', err);
+                        fallbackCopyTextToClipboard(text, message);
+                    });
+            } else {
+                fallbackCopyTextToClipboard(text, message);
+            }
+
+            const dropdown = document.getElementById(`dropdown-${rowIndex}`);
+            if (dropdown) dropdown.classList.remove('show');
+        }
+
+        function fallbackCopyTextToClipboard(text, successMessage = 'Copiado al portapapeles') {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+
+            textArea.style.position = "fixed";
+            textArea.style.left = "-9999px";
+            textArea.style.top = "0";
+
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast(successMessage, 'success');
+                } else {
+                    showToast('No se pudo copiar el texto', 'error');
+                }
+            } catch (err) {
+                console.error('Fallback: Oops, unable to copy', err);
+                showToast('Error al copiar', 'error');
+            }
+
+            document.body.removeChild(textArea);
         }
 
         function handleError(error) {
