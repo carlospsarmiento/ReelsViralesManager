@@ -194,10 +194,16 @@
         }
 
         .btn-icon {
-            padding: 8px;
+            padding: 0;
             border-radius: 50%;
             width: 36px;
             height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            font-size: 1rem;
+            line-height: 1;
         }
 
         .btn-delete {
@@ -230,11 +236,24 @@
             color: #000;
         }
 
+        .btn-download {
+            background-color: var(--accent-color);
+            color: #000;
+        }
+
+        .btn-download:hover {
+            background-color: var(--accent-hover);
+        }
+
         .btn-play {
             background-color: var(--accent-color);
             color: #000;
-            width: 100%;
-            margin-top: 10px;
+            padding: 0 16px;
+            height: 36px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .btn-play:hover {
@@ -450,7 +469,8 @@
                     <div class="actions">
                         <button class="btn-icon btn-approve" onclick="updateStatus(${video.rowIndex}, 'Aprobado')" title="Aprobar">✓</button>
                         <button class="btn-icon btn-reject" onclick="updateStatus(${video.rowIndex}, 'Rechazado')" title="Rechazar">✕</button>
-                        <button class="btn-icon btn-play" style="width:auto; margin:0;" onclick="playVideo('${video.url}')" title="Ver Video">▶</button>
+                        <a href="${video.url}" target="_blank" class="btn-icon btn-download" style="text-decoration:none;" title="Descargar" download>📥</a>
+                        <button class="btn-play" onclick="playVideo('${video.url}')" title="Ver Video">▶ Ver Video</button>
                     </div>
                 `;
                     createdList.appendChild(item);
