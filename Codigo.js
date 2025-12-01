@@ -25,6 +25,7 @@ function getVideos() {
             descripcion: row[1], // Column B
             statusCreacion: row[3], // Column D
             statusAprobacion: row[4], // Column E
+            statusPublicacion: row[5], // Column F
             url: row[6] // Column G
         };
     });

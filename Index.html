@@ -398,7 +398,8 @@
             createdList.innerHTML = '';
 
             const pendingVideos = videos.filter(v => v.statusCreacion === 'Pendiente');
-            const createdVideos = videos.filter(v => v.statusCreacion === 'Creado');
+            // Filtrar videos creados que además tengan status de publicación pendiente
+            const createdVideos = videos.filter(v => v.statusCreacion === 'Creado' && v.statusPublicacion === 'Pendiente');
 
             document.getElementById('pending-count').textContent = pendingVideos.length;
             document.getElementById('created-count').textContent = createdVideos.length;
