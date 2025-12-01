@@ -11,7 +11,7 @@ function getVideos() {
     const sheet = SpreadsheetApp.openById('148BDQffYq4O_RJFRBHRamIiUQoXESp17zQM3K-iBkXs').getSheetByName('Reels');
 
     if (!sheet) {
-        throw new Error('No se encontró la hoja "Hoja1". Por favor verifica el nombre de la hoja.');
+        throw new Error('No se encontró la hoja "Reels". Por favor verifica el nombre de la hoja.');
     }
 
     const data = sheet.getDataRange().getValues();
@@ -22,6 +22,7 @@ function getVideos() {
         return {
             rowIndex: index + 2, // 1-based index, +1 for header
             idea: row[0], // Column A
+            descripcion: row[1], // Column B
             statusCreacion: row[3], // Column D
             statusAprobacion: row[4], // Column E
             url: row[6] // Column G

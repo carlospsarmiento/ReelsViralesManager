@@ -136,6 +136,14 @@
             margin-bottom: 4px;
         }
 
+        .video-description {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin: 4px 0 8px 0;
+            line-height: 1.4;
+            opacity: 0.8;
+        }
+
         .video-meta {
             font-size: 0.8rem;
             color: var(--text-secondary);
@@ -405,6 +413,7 @@
                     item.innerHTML = `
                     <div class="video-info">
                         <span class="video-title">${video.idea}</span>
+                        <p class="video-description">${video.descripcion || ''}</p>
                         <span class="video-meta">Fila: ${video.rowIndex}</span>
                     </div>
                     <button class="btn-delete" onclick="deleteVideo(${video.rowIndex})" title="Eliminar">
@@ -432,6 +441,7 @@
                     item.innerHTML = `
                     <div class="video-info">
                         <span class="video-title">${video.idea}</span>
+                        <p class="video-description">${video.descripcion || ''}</p>
                         <div class="video-meta">
                             <span class="status-badge ${statusClass}">${statusText}</span>
                         </div>
