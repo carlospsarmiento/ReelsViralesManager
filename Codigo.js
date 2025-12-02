@@ -43,3 +43,10 @@ function updateVideoStatus(rowIndex, status) {
     sheet.getRange(rowIndex, 5).setValue(status);
     return 'Updated';
 }
+
+function markAsPublished(rowIndex) {
+    const sheet = SpreadsheetApp.openById('148BDQffYq4O_RJFRBHRamIiUQoXESp17zQM3K-iBkXs').getSheetByName('Reels');
+    // Column F is index 6 (1-based)
+    sheet.getRange(rowIndex, 6).setValue('Publicado');
+    return 'Updated';
+}

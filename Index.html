@@ -564,6 +564,7 @@
                             <div id="dropdown-${video.rowIndex}" class="dropdown-menu">
                                 <button class="dropdown-item" onclick="copyContent(${video.rowIndex}, 'title')">📄 Copiar Título</button>
                                 <button class="dropdown-item" onclick="copyContent(${video.rowIndex}, 'description')">📝 Copiar Desc.</button>
+                                <button class="dropdown-item" onclick="markAsPublished(${video.rowIndex})">✅ Marcar como Publicado</button>
                             </div>
                         </div>
                     </div>
@@ -598,6 +599,21 @@
                 })
                 .withFailureHandler(handleError)
                 .updateVideoStatus(rowIndex, status);
+        }
+
+        function markAsPublished(rowIndex) {
+            // Cerrar el menú contextual del elemento
+            const dropdown = document.getElementById(`dropdown-${rowIndex}`);
+            if (dropdown) dropdown.classList.remove('show');
+
+            showLoader();
+            google.script.run
+                .withSuccessHandler(() => {
+                    showToast('Video marcado como Publicado', 'success');
+                    loadVideos();
+                })
+                .withFailureHandler(handleError)
+                .markAsPublished(rowIndex);
         }
 
         function playVideo(url) {
