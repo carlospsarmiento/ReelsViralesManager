@@ -117,11 +117,14 @@
             border: 1px solid transparent;
         }
 
-        .video-item:hover {
+        .video-item:hover:not(.dropdown-open) {
             transform: translateY(-2px);
             background-color: #333;
             border-color: rgba(187, 134, 252, 0.3);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .video-item.dropdown-open {
+            transform: none !important;
         }
 
         .video-info {
@@ -278,18 +281,14 @@
 
         .dropdown-menu {
             display: none;
-            position: absolute;
-            bottom: 100%;
-            /* Show above */
-            right: 0;
+            position: fixed; /* Evita clipping dentro de contenedores con overflow */
             background-color: #333;
             min-width: 160px;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
             border-radius: 8px;
-            z-index: 100;
+            z-index: 3000; /* Por encima de todo */
             border: 1px solid rgba(255, 255, 255, 0.1);
             overflow: hidden;
-            margin-bottom: 5px;
         }
 
         .dropdown-menu.show {
@@ -479,6 +478,10 @@
                         openDropdown.classList.remove('show');
                     }
                 }
+                const openItems = document.getElementsByClassName('video-item dropdown-open');
+                while (openItems.length) {
+                    openItems[0].classList.remove('dropdown-open');
+                }
             }
         }
 
@@ -552,17 +555,17 @@
                     <div class="actions">
                         <button class="btn-icon btn-approve" onclick="updateStatus(${video.rowIndex}, 'Aprobado')" title="Aprobar">✓</button>
                         <button class="btn-icon btn-reject" onclick="updateStatus(${video.rowIndex}, 'Rechazado')" title="Rechazar">✕</button>
-                        
+                        <a href="${video.url}" target="_blank" class="btn-icon btn-download" style="text-decoration:none;" title="Descargar" download>📥</a>
+                        <button class="btn-play" onclick="playVideo('${video.url}')" title="Ver Video">▶ Ver Video</button>
+
+                        <!-- Menú contextual al final de las opciones -->
                         <div class="dropdown-container">
                             <button class="btn-icon btn-more" onclick="toggleDropdown(event, ${video.rowIndex})" title="Más opciones">⋮</button>
                             <div id="dropdown-${video.rowIndex}" class="dropdown-menu">
                                 <button class="dropdown-item" onclick="copyContent(${video.rowIndex}, 'title')">📄 Copiar Título</button>
-                                <button class="dropdown-item" onclick="copyContent(${video.rowIndex}, 'description')">� Copiar Desc.</button>
+                                <button class="dropdown-item" onclick="copyContent(${video.rowIndex}, 'description')">📝 Copiar Desc.</button>
                             </div>
                         </div>
-
-                        <a href="${video.url}" target="_blank" class="btn-icon btn-download" style="text-decoration:none;" title="Descargar" download>📥</a>
-                        <button class="btn-play" onclick="playVideo('${video.url}')" title="Ver Video">▶ Ver Video</button>
                     </div>
                 `;
                     createdList.appendChild(item);
@@ -660,18 +663,48 @@
 
         function toggleDropdown(event, rowIndex) {
             event.stopPropagation();
-            // Close all other dropdowns
+            const currentItem = event.currentTarget.closest('.video-item');
+            // Cerrar otros menús y limpiar estado
             const dropdowns = document.getElementsByClassName("dropdown-menu");
             for (let i = 0; i < dropdowns.length; i++) {
                 if (dropdowns[i].id !== `dropdown-${rowIndex}`) {
                     dropdowns[i].classList.remove('show');
                 }
             }
+            const openItems = document.getElementsByClassName('video-item dropdown-open');
+            while (openItems.length) {
+                openItems[0].classList.remove('dropdown-open');
+            }
 
             const dropdown = document.getElementById(`dropdown-${rowIndex}`);
-            if (dropdown) {
-                dropdown.classList.toggle("show");
+            if (!dropdown) return;
+
+            // Alternar si ya está visible
+            if (dropdown.classList.contains('show')) {
+                dropdown.classList.remove('show');
+                currentItem && currentItem.classList.remove('dropdown-open');
+                return;
             }
+
+            // Posicionar como overlay fijo respecto al viewport
+            const rect = event.currentTarget.getBoundingClientRect();
+            dropdown.classList.add('show');
+            const menuWidth = dropdown.offsetWidth || 160;
+            const menuHeight = dropdown.offsetHeight || 80;
+
+            let left = rect.right - menuWidth;
+            let top = rect.bottom + 6;
+
+            if (left < 8) left = 8;
+            const maxTop = window.innerHeight - menuHeight - 8;
+            if (top > maxTop) top = rect.top - menuHeight - 6;
+
+            dropdown.style.left = left + 'px';
+            dropdown.style.top = top + 'px';
+            dropdown.style.position = 'fixed';
+            dropdown.style.zIndex = '3000';
+
+            currentItem && currentItem.classList.add('dropdown-open');
         }
 
         function copyContent(rowIndex, type) {
