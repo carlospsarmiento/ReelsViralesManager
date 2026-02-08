@@ -503,8 +503,12 @@
             createdList.innerHTML = '';
 
             const pendingVideos = videos.filter(v => v.statusCreacion === 'Pendiente');
-            // Filtrar videos creados que además tengan status de publicación pendiente
-            const createdVideos = videos.filter(v => v.statusCreacion === 'Creado' && v.statusPublicacion === 'Pendiente');
+            // Filtrar videos creados con publicación pendiente y aprobación no rechazada (Pendiente o Aprobado)
+            const createdVideos = videos.filter(v => 
+                v.statusCreacion === 'Creado' &&
+                v.statusPublicacion === 'Pendiente' &&
+                (v.statusAprobacion === 'Pendiente' || v.statusAprobacion === 'Aprobado')
+            );
 
             document.getElementById('pending-count').textContent = pendingVideos.length;
             document.getElementById('created-count').textContent = createdVideos.length;
